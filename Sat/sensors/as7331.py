@@ -6,6 +6,7 @@ Uses the official Adafruit library:
 import logging
 
 import adafruit_as7331
+import time
 
 from sensors.base import Sensor, SensorReading
 
@@ -29,10 +30,11 @@ class AS7331Sensor(Sensor):
             )
             # Defaults are fine for now. Tune later if channels saturate
             # in direct sunlight, e.g.:
-            self._dev.gain = adafruit_as7331.GAIN_256X
-            self._dev.integration_time = adafruit_as7331.TIME_64MS
+            # self._dev.gain = adafruit_as7331.GAIN_256X
+            self._dev.integration_time = adafruit_as7331.TIME_256MS
 
             log.info(f"{self.name} initialised at 0x{self.config.i2c_address:02X}")
+            time.sleep(0.1)
             return True
         except Exception as e:
             log.error(f"{self.name} failed to initialise: {e}")
@@ -44,7 +46,7 @@ class AS7331Sensor(Sensor):
 
         try:
             uva, uvb, uvc = self._dev.one_shot()
-            print(f"uva: {uva}, uvb:{uvb}, uvc:{uvc}")
+            log.debug(f"{self.name} raw: uva={uva} uvb={uvb} uvc={uvc}")
             values = {
                 "uva_uw_cm2": float(uva),
                 "uvb_uw_cm2": float(uvb),
