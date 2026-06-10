@@ -14,6 +14,7 @@ from config import SENSORS, READ_INTERVAL_S
 from database import Database
 from pipeline import PipelineStats, process_reading
 from sensors.as7331 import AS7331Sensor
+from telemetry import TelemetrySink
  
 # Map config sensor names to driver classes. Add new sensors here.
 SENSOR_DRIVERS = {
@@ -40,7 +41,7 @@ def handle_signal(signum, frame) -> None:
     _running = False
  
  
-def startup(db: Database):
+def startup(db: Database, tel: TelemetrySink):
     """
     Initialise database and sensors in order.
     Returns the list of started sensors, or None if startup failed.
@@ -64,8 +65,15 @@ def startup(db: Database):
     except Exception as e:
         log.critical(f"I2C init failed: {e}")
         return None
+    
+    # 3. Telemetry
+    log.info("Initialising Telemetry sink")
+    try:
+        tel.open()
+    except Exception as e:
+        log.critical(f"Telemetry sink failed: {e}")
  
-    # 3. Sensors
+    # 4. Sensors
     sensors = []
     for sensor_config in SENSORS:
         if not sensor_config.enabled:
@@ -106,14 +114,14 @@ def startup(db: Database):
     return sensors
  
  
-def run_loop(sensors, db: Database, stats: PipelineStats) -> None:
+def run_loop(sensors, sinks: list, stats: PipelineStats) -> None:
     """Read every sensor each cycle until a stop signal arrives."""
     while _running:
         cycle_start = time.monotonic()
  
         for sensor in sensors:
             reading = sensor.read()
-            process_reading(reading, db, stats)
+            process_reading(reading, sinks, stats)
  
         # Sleep out the remainder of the interval
         elapsed = time.monotonic() - cycle_start
@@ -139,16 +147,19 @@ def main() -> int:
     signal.signal(signal.SIGTERM, handle_signal)
  
     db = Database()
+    tel = TelemetrySink("192.168.4.2", 5005)
     stats = PipelineStats()
+
+    sinks = [db, tel]
  
-    sensors = startup(db)
+    sensors = startup(db, tel)
     if sensors is None:
         log.critical("Startup failed — exiting")
         db.shutdown()
         return 1
  
     try:
-        run_loop(sensors, db, stats)
+        run_loop(sensors, sinks, stats)
     finally:
         shutdown(db, stats)
     return 0

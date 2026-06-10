@@ -23,12 +23,15 @@ class AS7331Sensor(Sensor):
     def initialise(self) -> bool:
         try:
             self._dev = adafruit_as7331.AS7331(
-                self._i2c, address=self.config.i2c_address
+                self._i2c, 
+                address=self.config.i2c_address,
+                
             )
             # Defaults are fine for now. Tune later if channels saturate
             # in direct sunlight, e.g.:
-            #   self._dev.gain = adafruit_as7331.GAIN_256X
-            #   self._dev.integration_time = adafruit_as7331.TIME_64MS
+            self._dev.gain = adafruit_as7331.GAIN_256X
+            self._dev.integration_time = adafruit_as7331.TIME_64MS
+
             log.info(f"{self.name} initialised at 0x{self.config.i2c_address:02X}")
             return True
         except Exception as e:
@@ -41,6 +44,7 @@ class AS7331Sensor(Sensor):
 
         try:
             uva, uvb, uvc = self._dev.one_shot()
+            print(f"uva: {uva}, uvb:{uvb}, uvc:{uvc}")
             values = {
                 "uva_uw_cm2": float(uva),
                 "uvb_uw_cm2": float(uvb),

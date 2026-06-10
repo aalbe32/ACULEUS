@@ -92,7 +92,7 @@ def build_record(reading: SensorReading, received_at: float) -> PipelineRecord:
  
 def process_reading(
     reading: SensorReading,
-    db,
+    sinks: list,
     stats: Optional[PipelineStats] = None,
 ) -> Optional[PipelineRecord]:
     """
@@ -109,7 +109,12 @@ def process_reading(
             stats.checksum_failures += 1
  
         record = build_record(verified, received_at)
-        db.write(record)
+        
+        for sink in sinks:
+            try:
+                sink.write(record)
+            except Exception as e:
+                log.error(f"Sink {type(sink).__name__} failed: {e}")
  
         if stats:
             stats.records_processed += 1
