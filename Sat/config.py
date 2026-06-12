@@ -16,11 +16,16 @@ SCHEMA_VERSION = 1
 # Main loop
 READ_INTERVAL_S = 1.0       # seconds between sensor read cycles
  
-
+# INA226 voltage sensor
 INA226_SHUNT_OHMS = 0.2
 INA226_CURRENT_LSB_A = 2
 
- 
+#BNO08X i2c adresses 
+BNO08X_I2C_ADRESS_1 =  0x4A
+BNO08X_I2C_ADRESS_2 =  0x4B
+
+
+
 @dataclass(frozen=True)
 class SensorConfig:
     """Static configuration for one sensor."""
@@ -44,5 +49,19 @@ SENSORS = [
         i2c_address=0x40,
         enabled=True,
         critical=True
-    )
+    ),
+
+    SensorConfig(
+        name="MCP9808", 
+        i2c_address=0x18,
+        enabled= True,
+        critical= True
+    ),
+
+    SensorConfig(
+        name="BNO08X",
+        i2c_address= BNO08X_I2C_ADRESS_1,
+        enabled=True,
+        critical=True
+    ),
 ]

@@ -13,14 +13,20 @@ import board
 from config import SENSORS, READ_INTERVAL_S
 from database import Database
 from pipeline import PipelineStats, process_reading
+
 from sensors.as7331 import AS7331Sensor
 from sensors.ina226 import INA226
+from sensors.mcp9808 import MCP9808
+from sensors.bno08x import BNO08X
+
 from telemetry import TelemetrySink
  
 # Map config sensor names to driver classes. Add new sensors here.
 SENSOR_DRIVERS = {
     "AS7331": AS7331Sensor,
     "INA226": INA226,
+    "MCP9808": MCP9808,
+    "BNO08X" : BNO08X, 
 }
  
 log = logging.getLogger("main")
