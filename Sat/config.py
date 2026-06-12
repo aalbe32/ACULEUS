@@ -16,6 +16,10 @@ SCHEMA_VERSION = 1
 # Main loop
 READ_INTERVAL_S = 1.0       # seconds between sensor read cycles
  
+
+INA226_SHUNT_OHMS = 0.2
+INA226_CURRENT_LSB_A = 2
+
  
 @dataclass(frozen=True)
 class SensorConfig:
@@ -34,4 +38,11 @@ SENSORS = [
         enabled=True,
         critical=True,
     ),
+
+    SensorConfig(
+        name="INA226",
+        i2c_address=0x40,
+        enabled=True,
+        critical=True
+    )
 ]
