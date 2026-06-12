@@ -206,6 +206,6 @@ class INA226(Sensor):
             return self.make_reading(values)
  
         except OSError as e:
-            self._regs = None  # next cycle re-runs initialise()
+            self._dev = None  # next cycle re-runs initialise()
             log.warning(f"{self.name} read failed ({e}) — reinit next cycle")
             return self.make_fault(f"read error: {e}")
