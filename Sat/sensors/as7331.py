@@ -34,7 +34,7 @@ STUCK_ZERO_THRESHOLD = 3    # consecutive all-zero reads -> reinit
 STUCK_REPEAT_THRESHOLD = 4  # consecutive bit-identical reads -> reinit
  
  
-class AS7331Sensor(Sensor):
+class AS7331(Sensor):
     """UVA / UVB / UVC irradiance (µW/cm²) plus die temperature (°C)."""
  
     def __init__(self, config, i2c):
