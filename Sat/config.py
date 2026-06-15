@@ -46,7 +46,9 @@ QMC5883L_I2C_ADDRESS = 0x0D
 class SensorConfig:
     """Static configuration for one sensor."""
     name: str
-    i2c_address: int
+    bus: str = "i2c" # set i2c to default as only one spi sensor
+    i2c_address: int | None = None
+    spi_cs_pin: int | None = None
     enabled: bool = True
     critical: bool = False   # if True, startup aborts when this sensor fails
  
@@ -86,6 +88,14 @@ SENSORS = [
         i2c_address= QMC5883L_I2C_ADDRESS,
         enabled=True,
         critical=True
+    ),
+
+    SensorConfig(
+        name="MAX31855",
+        bus="spi",
+        spi_cs_pin= 7, # set to gpio spi pin,
+        enabled=True,
+        critical=True,
     ),
 
 ]

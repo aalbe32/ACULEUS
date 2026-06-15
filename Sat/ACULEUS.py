@@ -8,7 +8,7 @@ import signal
 import sys
 import time
  
-import board
+import board, digitalio
  
 from config import SENSORS, READ_INTERVAL_S
 from database import Database
@@ -19,6 +19,7 @@ from sensors.ina226 import INA226
 from sensors.mcp9808 import MCP9808
 from sensors.bno08x import BNO08X
 from sensors.qmc5883l import QMC5883L
+from sensors.max31855 import MAX31855
 
 from telemetry import TelemetrySink
  
@@ -29,6 +30,7 @@ SENSOR_DRIVERS = {
     "MCP9808": MCP9808,
     "BNO08X" : BNO08X,
     "QMC5883L": QMC5883L,
+    "MAX31855": MAX31855,
 }
  
 log = logging.getLogger("main")
@@ -76,14 +78,22 @@ def startup(db: Database, tel: TelemetrySink):
         log.critical(f"I2C init failed: {e}")
         return None
     
-    # 3. Telemetry
+    # 3. SPI bus
+    log.info("Initialising SPI bus...")
+    try:
+        spi = board.SPI()  # uses the board's default SCL/SDA pins
+    except Exception as e:
+        log.critical(f"SPI init failed: {e}")
+        return None
+    
+    # 4. Telemetry
     log.info("Initialising Telemetry sink")
     try:
         tel.open()
     except Exception as e:
         log.critical(f"Telemetry sink failed: {e}")
  
-    # 4. Sensors
+    # 5. Sensors
     sensors = []
     for sensor_config in SENSORS:
         if not sensor_config.enabled:
@@ -94,9 +104,17 @@ def startup(db: Database, tel: TelemetrySink):
         if driver_class is None:
             log.warning(f"No driver registered for {sensor_config.name} — skipping")
             continue
- 
-        sensor = driver_class(sensor_config, i2c)
-        log.info(f"Initialising {sensor_config.name}...")
+
+        # init i2c sensors
+        if sensor_config.bus == "i2c":
+            sensor = driver_class(sensor_config, i2c)
+            log.info(f"Initialising {sensor_config.name}...")
+        
+        # init spi sensor at cs address
+        elif sensor_config.bus == "spi":
+            cs = digitalio.DigitalInOut(getattr(board, f"D{sensor_config.spi_cs_pin}"))
+            sensor = driver_class(sensor_config, spi, cs)
+            log.info(f"Initialising {sensor_config.name}...")
  
         if not sensor.initialise():
             if sensor_config.critical:
