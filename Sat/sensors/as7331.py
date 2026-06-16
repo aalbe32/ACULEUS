@@ -92,7 +92,10 @@ class AS7331(Sensor):
     def read(self) -> SensorReading:
         if self._dev is None and not self.initialise():
             return self.make_fault("device not initialised")
- 
+
+        if not self._dev.data_ready:
+            return self.make_fault("device is not ready with data")
+    
         try:
             uva, uvb, uvc = self._dev.one_shot()
             overflow = bool(self._dev.overflow)
