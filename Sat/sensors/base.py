@@ -38,6 +38,7 @@ class Sensor:
     def __init__(self, config: SensorConfig):
         self.config = config
         self.name = config.name
+        read_rate_hz = config.read_rate_hz
 
     def initialise(self) -> bool:
         raise NotImplementedError
@@ -70,3 +71,6 @@ class Sensor:
             fault=True,
             fault_reason=reason,
         )
+
+
+

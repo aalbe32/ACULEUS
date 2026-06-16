@@ -49,6 +49,7 @@ class SensorConfig:
     bus: str = "i2c" # set i2c to default as only one spi sensor
     i2c_address: int | None = None
     spi_cs_pin: int | None = None
+    read_rate_hz: float | None = 1
     enabled: bool = True
     critical: bool = False   # if True, startup aborts when this sensor fails
  
@@ -58,6 +59,7 @@ SENSORS = [
     SensorConfig(
         name="AS7331",
         i2c_address=AS7331_I2C_ADDRESS,
+        read_rate_hz = 5.0,
         enabled=True,
         critical=True,
     ),
@@ -65,28 +67,28 @@ SENSORS = [
     SensorConfig(
         name="INA226",
         i2c_address=INA226_I2C_ADDRESS,
-        enabled=True,
+        enabled=False,
         critical=True
     ),
 
     SensorConfig(
         name="MCP9808", 
         i2c_address=MCP9808_I2C_ADDRESS,
-        enabled= True,
+        enabled= False,
         critical= True
     ),
 
     SensorConfig(
         name="BNO08X",
         i2c_address= BNO08X_I2C_ADDRESS_1,
-        enabled=True,
+        enabled=False,
         critical=True
     ),
 
     SensorConfig(
         name="QMC5883L",
         i2c_address= QMC5883L_I2C_ADDRESS,
-        enabled=True,
+        enabled=False,
         critical=True
     ),
 
@@ -94,7 +96,7 @@ SENSORS = [
         name="MAX31855",
         bus="spi",
         spi_cs_pin= 7, # set to gpio spi pin,
-        enabled=True,
+        enabled=False,
         critical=True,
     ),
 

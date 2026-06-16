@@ -6,8 +6,9 @@ ships it over TCP, and auto-reconnects on failure.
 import json
 import logging
 import socket
-from typing import Optional
+import threading
 
+from typing import Optional
 from pipeline import PipelineRecord
 
 log = logging.getLogger(__name__)
@@ -35,14 +36,17 @@ class TelemetrySink:
         self._sock: Optional[socket.socket] = None
         self._sent = 0
         self._failed = 0
+        self._lock = threading.Lock()
 
     def open(self) -> None:
         """Best-effort connect at startup. Failure is fine — write() will retry."""
         self._connect()
 
-    def _connect(self) -> bool:
+    def _connect_locked(self) -> bool:
         try:
-            s = socket.create_connection((self._host, self._port), timeout=SOCKET_TIMEOUT_S)
+            s = socket.create_connection(
+                (self._host, self._port), timeout=SOCKET_TIMEOUT_S
+            )
             s.settimeout(SOCKET_TIMEOUT_S)
             self._sock = s
             log.info(f"Telemetry connected to {self._host}:{self._port}")
@@ -51,14 +55,15 @@ class TelemetrySink:
             log.warning(f"Telemetry connect failed: {e}")
             self._sock = None
             return False
-
-    def _drop(self) -> None:
-        if self._sock:
+ 
+    def _drop_locked(self) -> None:
+        if self._sock is not None:
             try:
                 self._sock.close()
             except OSError:
                 pass
         self._sock = None
+ 
 
     def _build_packet(self, record: PipelineRecord) -> bytes:
         body = {
@@ -81,18 +86,21 @@ class TelemetrySink:
         """Send one record. Reconnects once on failure, then gives up for this packet."""
         packet = self._build_packet(record)
 
-        if self._sock is None and not self._connect():
-            self._failed += 1
-            return
 
-        try:
-            self._sock.sendall(packet)
-            self._sent += 1
-        except OSError as e:
-            log.warning(f"Telemetry send failed ({e}) — dropping socket, will retry next packet")
-            self._drop()
-            self._failed += 1
+        with self._lock:
+            if self._sock is None and not self._connect():
+                self._failed += 1
+                return
+
+            try:
+                self._sock.sendall(packet)
+                self._sent += 1
+            except OSError as e:
+                log.warning(f"Telemetry send failed ({e}) — dropping socket, will retry next packet")
+                self._drop()
+                self._failed += 1
 
     def shutdown(self) -> None:
-        self._drop()
-        log.info(f"Telemetry closed — sent={self._sent} failed={self._failed}")
+        with self._lock:
+            self._drop()
+            log.info(f"Telemetry closed — sent={self._sent} failed={self._failed}")

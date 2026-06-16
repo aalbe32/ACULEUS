@@ -16,6 +16,7 @@ dropped with a warning. Sensors should always emit the same keys.
 import logging
 import re
 import sqlite3
+import threading
 from typing import Dict, List, Optional, Tuple
  
 from config import DB_PATH
@@ -84,22 +85,24 @@ class Database:
         self._sensor_tables: Dict[str, Tuple[str, List[str]]] = {}
         self._write_count = 0
         self._error_count = 0
+        self._lock = threading.Lock()
  
     def initialize(self) -> None:
         """Open the connection, apply pragmas, create the readings table."""
         try:
-            self._conn = sqlite3.connect(self._db_path)
-            self._conn.row_factory = sqlite3.Row
- 
-            for pragma in PRAGMAS:
-                self._conn.execute(pragma)
- 
-            self._conn.execute(READINGS_TABLE_SQL)
-            for idx_sql in READINGS_INDICES_SQL:
-                self._conn.execute(idx_sql)
-            self._conn.commit()
- 
-            log.info(f"Database initialized: {self._db_path}")
+            with self._lock:
+                self._conn = sqlite3.connect(self._db_path, check_same_thread=False)
+                self._conn.row_factory = sqlite3.Row
+    
+                for pragma in PRAGMAS:
+                    self._conn.execute(pragma)
+    
+                self._conn.execute(READINGS_TABLE_SQL)
+                for idx_sql in READINGS_INDICES_SQL:
+                    self._conn.execute(idx_sql)
+                self._conn.commit()
+    
+                log.info(f"Database initialized: {self._db_path}")
         except Exception as e:
             log.critical(f"Failed to initialize DB: {e}")
             raise
@@ -132,66 +135,69 @@ class Database:
     def write(self, record: PipelineRecord) -> None:
         """Insert one record. Fault readings only land in `readings`; non-fault
         readings also get a row in their sensor's values table."""
-        if self._conn is None:
-            raise RuntimeError("Database.write() called before initialize()")
- 
-        try:
-            cur = self._conn.execute(
-                INSERT_READING_SQL,
-                (
-                    record.satellite_id,
-                    record.mission_name,
-                    record.sensor_name,
-                    record.timestamp_rtc,
-                    record.timestamp_monotonic,
-                    record.schema_version,
-                    int(record.is_anomalous),
-                    int(record.fault),
-                    record.fault_reason,
-                    record.checksum,
-                    record.received_at,
-                ),
-            )
-            reading_id = cur.lastrowid
- 
-            if not record.fault and record.values:
-                table, keys = self._ensure_sensor_table(
-                    record.sensor_name, list(record.values.keys())
+        with self._lock:   
+
+            if self._conn is None:
+                raise RuntimeError("Database.write() called before initialize()")
+    
+            try:
+                cur = self._conn.execute(
+                    INSERT_READING_SQL,
+                    (
+                        record.satellite_id,
+                        record.mission_name,
+                        record.sensor_name,
+                        record.timestamp_rtc,
+                        record.timestamp_monotonic,
+                        record.schema_version,
+                        int(record.is_anomalous),
+                        int(record.fault),
+                        record.fault_reason,
+                        record.checksum,
+                        record.received_at,
+                    ),
                 )
- 
-                # Drop any keys not in the locked schema, warn once per surprise key
-                extra = set(record.values.keys()) - set(keys)
-                if extra:
-                    log.warning(
-                        f"{record.sensor_name}: dropping unknown keys {extra} "
-                        f"(table schema locked to {keys})"
+                reading_id = cur.lastrowid
+    
+                if not record.fault and record.values:
+                    table, keys = self._ensure_sensor_table(
+                        record.sensor_name, list(record.values.keys())
                     )
- 
-                cols = "reading_id," + ",".join(keys)
-                placeholders = ",".join(["?"] * (len(keys) + 1))
-                vals = [reading_id] + [
-                    float(record.values.get(k, 0.0)) for k in keys
-                ]
-                self._conn.execute(
-                    f"INSERT INTO {table} ({cols}) VALUES ({placeholders});", vals
-                )
- 
-            self._conn.commit()
-            self._write_count += 1
-        except Exception as e:
-            self._error_count += 1
-            log.error(f"Failed to write: {e} (total errors: {self._error_count})")
-            raise
+    
+                    # Drop any keys not in the locked schema, warn once per surprise key
+                    extra = set(record.values.keys()) - set(keys)
+                    if extra:
+                        log.warning(
+                            f"{record.sensor_name}: dropping unknown keys {extra} "
+                            f"(table schema locked to {keys})"
+                        )
+    
+                    cols = "reading_id," + ",".join(keys)
+                    placeholders = ",".join(["?"] * (len(keys) + 1))
+                    vals = [reading_id] + [
+                        float(record.values.get(k, 0.0)) for k in keys
+                    ]
+                    self._conn.execute(
+                        f"INSERT INTO {table} ({cols}) VALUES ({placeholders});", vals
+                    )
+    
+                self._conn.commit()
+                self._write_count += 1
+            except Exception as e:
+                self._error_count += 1
+                log.error(f"Failed to write: {e} (total errors: {self._error_count})")
+                raise
  
     def shutdown(self) -> None:
         """Commit and close. Safe to call even if never initialized."""
-        if self._conn is None:
-            return
-        try:
-            self._conn.commit()
-            self._conn.close()
-        finally:
-            self._conn = None
-        log.info(
-            f"Database closed — writes={self._write_count} errors={self._error_count}"
-        )
+        with self._lock:
+            if self._conn is None:
+                return
+            try:
+                self._conn.commit()
+                self._conn.close()
+            finally:
+                self._conn = None
+            log.info(
+                f"Database closed — writes={self._write_count} errors={self._error_count}"
+            )
