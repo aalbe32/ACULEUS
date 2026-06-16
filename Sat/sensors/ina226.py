@@ -165,7 +165,7 @@ class INA226(Sensor):
                     f"cal=0x{cal_reg:04X} (want 0x{cal:04X}) "
                     f"cfg=0x{cfg_reg:04X} (want 0x{CONFIG_VALUE:04X})"
                 )
-                self._regs = None
+                self._dev = None
                 return False
             
             # successful init 
@@ -178,7 +178,7 @@ class INA226(Sensor):
             return True
         except Exception as e:
             log.error(f"{self.name} failed to initialise: {e}")
-            self._regs = None
+            self._dev = None
             return False
         
 

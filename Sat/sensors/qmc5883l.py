@@ -192,7 +192,7 @@ class QMC5883L(Sensor):
  
             # One I2C transaction for all six bytes — atomic on the chip,
             # so X/Y/Z come from the same sample.
-            buf = self._regs.read_bytes(REG_DATA, 6)
+            buf = self._dev.read_bytes(REG_DATA, 6)
             x_raw = int.from_bytes(buf[0:2], "little", signed=True)
             y_raw = int.from_bytes(buf[2:4], "little", signed=True)
             z_raw = int.from_bytes(buf[4:6], "little", signed=True)

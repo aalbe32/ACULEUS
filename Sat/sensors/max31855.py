@@ -28,7 +28,7 @@ class MAX31855(Sensor):
         """Create the device (= chip software reset + ID check), configure,
         and VERIFY the configuration with a read-back."""
         try:
-            self._dev = adafruit_max31855.MAX31855(self._spi, address=self._cs)
+            self._dev = adafruit_max31855.MAX31855(self._spi, cs=self._cs)
 
             log.info(
                 f"{self.name} initialised at 0x{self.config.spi_cs_pin:02X} "
