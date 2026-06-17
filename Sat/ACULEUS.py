@@ -22,7 +22,7 @@ from sensors.qmc5883l import QMC5883L
 from sensors.max31855 import MAX31855
 
 
-from threads import SensorThread
+from threads.SensorThread import SensorThread
 from telemetry import TelemetrySink
  
 # Map config sensor names to driver classes. Add new sensors here.

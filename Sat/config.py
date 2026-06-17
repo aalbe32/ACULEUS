@@ -2,6 +2,8 @@
  
 All project-wide constants and the sensor list live here.
 """
+from __future__ import annotations
+
 from dataclasses import dataclass
  
  
