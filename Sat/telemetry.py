@@ -40,7 +40,7 @@ class TelemetrySink:
 
     def open(self) -> None:
         """Best-effort connect at startup. Failure is fine — write() will retry."""
-        self._connect()
+        self._connect_locked()
 
     def _connect_locked(self) -> bool:
         try:
@@ -88,7 +88,7 @@ class TelemetrySink:
 
 
         with self._lock:
-            if self._sock is None and not self._connect():
+            if self._sock is None and not self._connect_locked():
                 self._failed += 1
                 return
 
@@ -97,10 +97,10 @@ class TelemetrySink:
                 self._sent += 1
             except OSError as e:
                 log.warning(f"Telemetry send failed ({e}) — dropping socket, will retry next packet")
-                self._drop()
+                self._drop_locked()
                 self._failed += 1
 
     def shutdown(self) -> None:
         with self._lock:
-            self._drop()
+            self._drop_locked()
             log.info(f"Telemetry closed — sent={self._sent} failed={self._failed}")
