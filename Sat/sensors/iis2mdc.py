@@ -1,3 +1,37 @@
+"""IIS2MDC 3-axis magnetometer driver.
+ 
+ST IIS2MDC — fixed ±50 gauss range, 1.5 mgauss/LSB sensitivity.
+Register-level driver via I2CHelpers, modeled on qmc5883l.py.
+ 
+The IIS2MDC registers used:
+ 
+    0x45-0x4A  OFFSET_X/Y/Z   — hard-iron offset (signed int16, little-endian).
+                                Left at 0 here; calibration is offline.
+    0x4F       WHO_AM_I       — reads 0x40. Strong ID (unlike QMC's 0xFF).
+    0x60       CFG_REG_A      — TEMP_COMP, REBOOT, SOFT_RST, LP, ODR, MD
+    0x61       CFG_REG_B      — offset cancellation, low-pass filter
+    0x62       CFG_REG_C      — BDU, I2C/SPI selection, DRDY-on-pin, etc.
+    0x67       STATUS_REG     — bit3 = Zyxda (new XYZ data available)
+    0x68-0x6D  OUTX/Y/Z       — signed int16, LITTLE-endian, two's complement
+    0x6E-0x6F  TEMP_OUT       — signed int16, 8 LSB/°C (12-bit resolution)
+ 
+Data registers are LITTLE-endian — read_u16/read_s16 default
+to big-endian, so we use read_bytes() + manual decode.
+ 
+Critical startup notes from the datasheet:
+
+- CFG_REG_A[COMP_TEMP_EN] must be 1 for proper operation (sec 8.5, footnote 1).
+  Without it, sensitivity drifts uncorrected across temperature. We verify
+  this stuck via readback.
+
+- BDU should be enabled because we poll at a different rate against a 10 Hz ODR — without
+  BDU the chip can update output registers mid-read, tearing high/low bytes
+  across two samples.
+
+- CFG_REG_C bit 2
+
+"""
+
 import logging
 import time
 
