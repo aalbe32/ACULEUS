@@ -20,6 +20,7 @@ from sensors.mcp9808 import MCP9808
 from sensors.bno08x import BNO08X
 from sensors.qmc5883l import QMC5883L
 from sensors.max31855 import MAX31855
+from sensors.iis2mdc import IIS2MCD
 
 
 from threads.SensorThread import SensorThread
@@ -33,6 +34,7 @@ SENSOR_DRIVERS = {
     "BNO08X" : BNO08X,
     "QMC5883L": QMC5883L,
     "MAX31855": MAX31855,
+    "IIS2MDC" : IIS2MCD,
 }
 
 

@@ -43,6 +43,9 @@ QMC5883L_OUTPUT_RATE_HZ = 10
 QMC5883L_OVERSAMPLE     = 512
 QMC5883L_I2C_ADDRESS = 0x0D
 
+# IIS2MDC magnetometer (fixed address, ±50G range, 1.5 mgauss/LSB)
+IIS2MDC_I2C_ADDRESS = 0x1E
+
 
 @dataclass(frozen=True)
 class SensorConfig:
@@ -98,6 +101,13 @@ SENSORS = [
         name="MAX31855",
         bus="spi",
         spi_cs_pin= 7, # set to gpio spi pin,
+        enabled=False,
+        critical=True,
+    ),
+
+    SensorConfig(
+        name="IIS2MDC",
+        i2c_address=IIS2MDC_I2C_ADDRESS,
         enabled=False,
         critical=True,
     ),
