@@ -1,9 +1,9 @@
-# """
+"""
 
-# MAX31855 thermocouple interface
+ MAX31855 thermocouple interface
 
 
-# """
+"""
 import logging
 import time
  

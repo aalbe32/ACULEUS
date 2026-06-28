@@ -99,7 +99,7 @@ def startup(db: Database, tel: TelemetrySink):
         return None
     
     # 4. Telemetry
-    log.info("Initialising Telemetry sink")
+    log.info("Initialising Telemetry sinks...")
     try:
         tel.open()
     except Exception as e:
@@ -210,21 +210,6 @@ def supervise(threads, stats):
             if not t.is_alive():
                 log.error(f"{t.name} died unexpectedly")
 
- 
-def run_loop(sensors, sinks: list, stats: PipelineStats) -> None:
-    """Read every sensor each cycle until a stop signal arrives."""
-    while _running:
-        cycle_start = time.monotonic()
- 
-        for sensor in sensors:
-            reading = sensor.read()
-            process_reading(reading, sinks, stats)
- 
-        # Sleep out the remainder of the interval
-        elapsed = time.monotonic() - cycle_start
-        remaining = READ_INTERVAL_S - elapsed
-        if remaining > 0:
-            time.sleep(remaining)
 
 
 def stop_threads(threads):
