@@ -55,15 +55,16 @@ class SensorThread(threading.Thread):
 
             try:
                 reading = self.sensor.read()
+                self.latest = reading   # single-reference write is atomic in CPython
+                process_reading(reading, self.sinks, self.stats)
+                self.reads += 1
+
             except Exception as e:
                 # Drivers are expected to catch their own exceptions and
                 # return a fault reading.
                 log.exception(f"{self.name} read() raised — synthesising fault")
                 reading = self.sensor.make_fault(f"unhandled read exception: {e}")
-
-            self.latest = reading   # single-reference write is atomic in CPython
-            process_reading(reading, self.sinks, self.stats)
-            self.reads += 1
+            
 
             elapsed = time.monotonic() - cycle_start
             remaining = self.interval - elapsed
