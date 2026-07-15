@@ -34,7 +34,7 @@ STUCK_ZERO_THRESHOLD = 3    # consecutive all-zero reads -> reinit
 STUCK_REPEAT_THRESHOLD = 4  # consecutive bit-identical reads -> reinit
  
  
-class AS7331Sensor(Sensor):
+class AS7331(Sensor):
     """UVA / UVB / UVC irradiance (µW/cm²) plus die temperature (°C)."""
  
     def __init__(self, config, i2c):
@@ -92,7 +92,10 @@ class AS7331Sensor(Sensor):
     def read(self) -> SensorReading:
         if self._dev is None and not self.initialise():
             return self.make_fault("device not initialised")
- 
+
+        if not self._dev.data_ready:
+            return self.make_fault("device is not ready with data")
+    
         try:
             uva, uvb, uvc = self._dev.one_shot()
             overflow = bool(self._dev.overflow)
