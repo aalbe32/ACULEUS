@@ -28,7 +28,7 @@ class MCP9601(Sensor):
         self._i2c = i2c
         self._dev = None
 
-    def initialise(self, config, ) -> bool:
+    def initialise(self) -> bool:
         """Creat the device object"""
         try:
             self._dev = adafruit_mcp9600.MCP9600(
