@@ -64,6 +64,9 @@ class IIS2MDC(Sensor):
         try:
 
             x, y, z = self._dev.magnetic
+            x_r = self._dev._raw_x
+            y_r = self._dev._raw_y
+            z_r = self._dev._raw_z
 
             values = {
                 "x_mag": x,
@@ -73,6 +76,7 @@ class IIS2MDC(Sensor):
 
             log.debug(
                 f"{self.name} x={x}, y={y}, z={z}"
+                f"{self.name} raw: x={x_r}, y={y_r}, z={z_r}"
             )
 
             return self.make_reading(values)
