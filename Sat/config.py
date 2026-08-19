@@ -129,7 +129,7 @@ SENSORS = [
     ),
 
     SensorConfig(
-        name="MCP601",
+        name="MCP9601",
         i2c_address=MCP9601_I2C_ADDRESS,
         read_rate_hz=MCP9601_READ_RATE,
         enabled=False,
