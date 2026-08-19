@@ -68,11 +68,13 @@ QMC5883L_READ_RATE = 0x0D
 IIS2MDC_READ = [10, 20, 50 ,100]
 IIS2MDC_READ_RATE = IIS2MDC_READ[0] #10hz
 IIS2MDC_I2C_ADDRESS = 0x1C
+IIS2MDC_OFFSETS = [0.0, 0.0, 0.0] #float x, float y, float z 
 
 
 # MCP9601 thermocouple amplifier
 MCP9601_I2C_ADDRESS = 0x60
 MCP9601_READ_RATE = 1
+
 
 
 @dataclass(frozen=True)
