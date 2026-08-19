@@ -10,7 +10,7 @@ import time
  
 import board, digitalio
  
-from config import SENSORS, READ_INTERVAL_S
+from config import SENSORS, TELEM_IP, SUPERVISOR_TICK_S, HEALTH_LOG_INTERVAL_S, THREAD_JOIN_TIMEOUT_S
 from database import Database
 from pipeline import PipelineStats, process_reading
 
@@ -39,13 +39,6 @@ SENSOR_DRIVERS = {
     "MCP9601" : MCP9601
 }
 
-
-# Supervisor: how often main wakes to check threads.
-SUPERVISOR_TICK_S = 0.5
-# How often to emit a sensors health summary.
-HEALTH_LOG_INTERVAL_S = 30.0
-# Grace period for a sensor thread to finish its current read on stop.
-THREAD_JOIN_TIMEOUT_S = 2.0
  
 log = logging.getLogger("main")
  
@@ -253,7 +246,7 @@ def main() -> int:
     signal.signal(signal.SIGTERM, handle_signal)
  
     db = Database()
-    tel = TelemetrySink("192.168.4.2", 5005)
+    tel = TelemetrySink(TELEM_IP, 5005)
     stats = PipelineStats()
     sinks = [db, tel]
     threads = []

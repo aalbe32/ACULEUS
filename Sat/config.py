@@ -6,17 +6,33 @@ from __future__ import annotations
 
 from dataclasses import dataclass
  
- 
+
+
+"""
+-------------------------------------- MISSION CONFIG ---------------------------
+"""
 # Mission identity
 SATELLITE_ID = "ACULEUS-1"
 MISSION_NAME = "ACULEUS"
- 
+
 # Data
 DB_PATH = "data.db"
 SCHEMA_VERSION = 1
- 
-# Main loop
-READ_INTERVAL_S = 1.0       # seconds between sensor read cycles
+
+TELEM_IP = ""
+
+# Supervisor: how often main wakes to check threads.
+SUPERVISOR_TICK_S = 0.5
+# How often to emit a sensors health summary.
+HEALTH_LOG_INTERVAL_S = 30.0
+# Grace period for a sensor thread to finish its current read on stop.
+THREAD_JOIN_TIMEOUT_S = 2.0
+
+
+
+"""
+-------------------------------------- SENSOR CONFIG ---------------------------
+"""
  
 # MCP9808 Precision temp sensor
 MCP9808_I2C_ADDRESS = 0x18
