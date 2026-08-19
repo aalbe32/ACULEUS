@@ -41,6 +41,8 @@ REG_DIE_ID      = 0xFF   # Die ID — always 0x2260
 
 CONFIG_RESET = 0x8000
 
+CONFIG_FIXED = 0x4000
+
 CALIBRATION_CONST = 0.00512
 
 BUS_LSB_V   = 0.00125     # 1.25 mV per LSB
@@ -85,7 +87,8 @@ SHUNT_CONV_TIME = CT_1100US
 OPER_MODE       = MODE_BOTH_CONT
 
 CONFIG_VALUE = (
-    (AVG_MODE        << 9)
+     CONFIG_FIXED
+  | (AVG_MODE        << 9)
   | (BUS_CONV_TIME   << 6)
   | (SHUNT_CONV_TIME << 3)
   | (OPER_MODE       << 0)
@@ -113,7 +116,7 @@ class INA226(Sensor):
         self._dev = None
         self._shunt_ohms = INA226_SHUNT_OHMS
         self._current_lsb = INA226_CURRENT_LSB_A
-        self._power = 25.0 * INA226_CURRENT_LSB_A
+        self._power_lsb = 25.0 * INA226_CURRENT_LSB_A
 
     def initialise(self) -> bool:
         try: 
@@ -143,8 +146,8 @@ class INA226(Sensor):
             cal = 0.00512 / current_LSB * shunt_resistance
             """ 
             #write to calibration using equation (1)
-            cal = CALIBRATION_CONST / (self._current_lsb * self._shunt_ohms)
-            if not 0 < cal < 0x1000:
+            cal = round(CALIBRATION_CONST / (self._current_lsb * self._shunt_ohms))
+            if not 0 < cal < 0x8000:
                 log.error(
                     f"{self.name} calibration value {cal} out of range"
                     f"- check shunt_ohms/current_lsb in config"
@@ -159,7 +162,7 @@ class INA226(Sensor):
             # read both registers and ensure correct state
             cal_reg = self._dev.read_u16(REG_CALIBRATION)
             cfg_reg = self._dev.read_u16(REG_CONFIG)
-            if cal_reg != cal | cfg_reg != CONFIG_VALUE:
+            if cal_reg != cal or cfg_reg != CONFIG_VALUE:
                 log.error(
                     f"{self.name} config readback mismatch: "
                     f"cal=0x{cal_reg:04X} (want 0x{cal:04X}) "
