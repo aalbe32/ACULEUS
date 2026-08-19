@@ -12,6 +12,14 @@ import adafruit_lis2mdl
 from sensors.base import Sensor, SensorReading
  
 log = logging.getLogger(__name__)
+
+
+_RATE_HZ_ENUM = {
+    10: adafruit_lis2mdl.DataRate.Rate_10_HZ,
+    20: adafruit_lis2mdl.DataRate.Rate_20_HZ,
+    50: adafruit_lis2mdl.DataRate.Rate_50_HZ,
+    100: adafruit_lis2mdl.DataRate.Rate_100_HZ,
+}
  
  
  
@@ -30,10 +38,11 @@ class IIS2MDC(Sensor):
             adafruit_lis2mdl._ADDRESS_MAG = self.config.i2c_address
 
             self._dev = adafruit_lis2mdl.LIS2MDL(self._i2c)
-            self._dev._data_rate = self.config.read_rate_hz
+            self._dev._data_rate = _RATE_HZ_ENUM[self.config.read_rate_hz]
 
             log.info(
-                f"{self.name} initialised at 0x{self.config.i2c_address:02X} "
+                f"{self.name} initialised at 0x{self.config.i2c_address:02X}"
+                f"{self.name} Read Rate Configued to {self.config.read_rate_hz}" 
             )
             return True
         except Exception as e:
@@ -52,10 +61,14 @@ class IIS2MDC(Sensor):
             x, y, z = self._dev.magnetic
 
             values = {
-                "X_Mag": x,
-                "Y_Mag": y,
-                "Z_Mag": z,
+                "x_mag": x,
+                "y_mag": y,
+                "z_mag": z,
             }
+
+            log.debug(
+                            f"{self.name} x={x}, y={y}, z={z}"
+                        )
 
             return self.make_reading(values)
         except Exception as e:
