@@ -50,6 +50,9 @@ REG_TEMP_OUT   = 0x6E   # 2 bytes: TL, TH (little-endian, signed)
  
 # --- Expected chip identity ----------------------------------------------
 EXPECTED_WHO_AM_I = 0x40
+
+
+AUTO_INCREMENT = 0x80
  
 # --- STATUS_REG bits -----------------------------------------------------
 STATUS_ZYXDA = 0x08   # bit 3: new XYZ data available (cleared on data read)
@@ -173,13 +176,13 @@ class IIS2MCD(Sensor):
             # Six bytes in one transaction — atomic on the chip, so X/Y/Z
             # come from the same sample. BDU additionally guarantees that
             # the high byte matches the low byte if the chip updated mid-read.
-            buf = self._dev.read_bytes(REG_OUT_DATA, 6)
+            buf = self._dev.read_bytes(REG_OUT_DATA | AUTO_INCREMENT, 6)
             x_raw = int.from_bytes(buf[0:2], "little", signed=True)
             y_raw = int.from_bytes(buf[2:4], "little", signed=True)
             z_raw = int.from_bytes(buf[4:6], "little", signed=True)
 
             # Die temperature — 12-bit signed, 8 LSB/°C, centered on 25°C.
-            tbuf = self._dev.read_bytes(REG_TEMP_OUT, 2)
+            tbuf = self._dev.read_bytes(REG_TEMP_OUT | AUTO_INCREMENT, 2)
             t_raw = int.from_bytes(tbuf, "little", signed=True)
             temp_c = TEMP_OFFSET_C + (t_raw / TEMP_LSB_PER_C)
 
