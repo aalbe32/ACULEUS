@@ -3,3 +3,4 @@ adafruit-circuitpython-as7331
 adafruit-circuitpython-mcp9808
 Adafruit_CircuitPython_BNO08x
 adafruit-circuitpython-max31855
+adafruit-circuitpython-mcp9600
