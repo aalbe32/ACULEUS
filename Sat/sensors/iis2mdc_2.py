@@ -44,6 +44,11 @@ class IIS2MDC(Sensor):
                 f"{self.name} initialised at 0x{self.config.i2c_address:02X}"
                 f"{self.name} Read Rate Configued to {self.config.read_rate_hz}" 
             )
+
+            log.debug(
+                f"x_off-{self._dev.x_offset}, y_off-{self._dev.y_offset}, z_off-{self._dev.z_offset}"
+                f"read_rate-{self._dev.data_rate}"
+            )
             return True
         except Exception as e:
             log.error(f"{self.name} failed to initialise: {e}")
@@ -67,8 +72,8 @@ class IIS2MDC(Sensor):
             }
 
             log.debug(
-                            f"{self.name} x={x}, y={y}, z={z}"
-                        )
+                f"{self.name} x={x}, y={y}, z={z}"
+            )
 
             return self.make_reading(values)
         except Exception as e:
