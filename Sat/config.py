@@ -49,8 +49,9 @@ QMC5883L_I2C_ADDRESS = 0x0D
 QMC5883L_READ_RATE = 0x0D
 
 # IIS2MDC magnetometer (fixed address, ±50G range, 1.5 mgauss/LSB)
+IIS2MDC_READ = [10, 20, 50 ,100]
 IIS2MDC_I2C_ADDRESS = 0x1E
-IIS2MDC_READ_RATE = 1
+IIS2MDC_READ_RATE = IIS2MDC_READ[0] #10hz
 
 
 # MCP9601 thermocouple amplifier
