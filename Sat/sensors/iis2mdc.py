@@ -91,7 +91,7 @@ TEMP_OFFSET_C  = 25.0
 # Continuous mode at 10 Hz, high-resolution, temp comp on. At 1 Hz polling
 # we'll always see fresh data on the next read.
 CFG_A_VALUE = CFG_A_COMP_TEMP_EN | ODR_10HZ | MD_CONTINUOUS  # 0x80
-CFG_B_VALUE = 0x00                                            # no LPF, no offset cancel
+CFG_B_VALUE = 0x02                                            # no LPF, no offset cancel
 CFG_C_VALUE = CFG_C_BDU                                       # 0x10
  
 RESET_SETTLE_S = 0.020   # datasheet turn-on time is 9.4 ms in HR mode; pad it
