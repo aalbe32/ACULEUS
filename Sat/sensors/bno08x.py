@@ -7,6 +7,7 @@ import logging
 import time
  
 import adafruit_bno08x
+from adafruit_bno08x.i2c import BNO08X_I2C
  
 from sensors.base import Sensor, SensorReading
  
@@ -25,7 +26,7 @@ class BNO08X(Sensor):
         """Create the device (= chip software reset + ID check), configure,
         and VERIFY the configuration with a read-back."""
         try:
-            self._dev = adafruit_bno08x.BNO08X(
+            self._dev = BNO08X_I2C(
                 self._i2c, 
                 address=self.config.i2c_address,
             )
@@ -67,6 +68,8 @@ class BNO08X(Sensor):
             gyro = self._dev.gyro
 
             values = {
+
+                # this can be made faster by copying data to a buffer and upacking the buffer offsets
 
                 "mag_x" : mag[0],
                 "mag_y" : mag[1],
