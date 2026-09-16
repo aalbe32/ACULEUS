@@ -35,12 +35,16 @@ class BNO08X(Sensor):
                 f"{self.name} initialised at 0x{self.config.i2c_address:02X} "
             )
 
-            self._dev.enable_feature(adafruit_bno08x.BNO_REPORT_MAGNETOMETER)
-            self._dev.enable_feature(adafruit_bno08x.BNO_REPORT_ROTATION_VECTOR)
-            self._dev.enable_feature(adafruit_bno08x.BNO_REPORT_ACCELEROMETER)
-            self._dev.enable_feature(adafruit_bno08x.BNO_REPORT_LINEAR_ACCELERATION)
-            self._dev.enable_feature(adafruit_bno08x.BNO_REPORT_GYROSCOPE)
-            self._dev.enable_feature(adafruit_bno08x.BNO_REPORT_GRAVITY)
+            for feature in (
+                adafruit_bno08x.BNO_REPORT_MAGNETOMETER,
+                adafruit_bno08x.BNO_REPORT_ROTATION_VECTOR,
+                adafruit_bno08x.BNO_REPORT_ACCELEROMETER,
+                adafruit_bno08x.BNO_REPORT_LINEAR_ACCELERATION,
+                adafruit_bno08x.BNO_REPORT_GYROSCOPE,
+                adafruit_bno08x.BNO_REPORT_GRAVITY,
+            ):
+                self._dev.enable_feature(feature)
+                time.sleep(0.1)
             
             log.info(
                 f"{self.name} initialised at 0x{self.config.i2c_address:02X} "
