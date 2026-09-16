@@ -119,8 +119,9 @@ SENSORS = [
     SensorConfig(
         name="BNO08X",
         i2c_address= BNO08X_I2C_ADDRESS_1,
+        i2c_bus = 3,
         read_rate_hz=BNO08X_READ_RATE,
-        enabled=False,
+        enabled=True,
         critical=False
     ),
 
