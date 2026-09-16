@@ -82,6 +82,7 @@ class SensorConfig:
     """Static configuration for one sensor."""
     name: str
     bus: str = "i2c" # set i2c to default as only one spi sensor
+    i2c_bus: int = 1 # Default 1; (1, 3) <- in aculeus
     i2c_address: int | None = None
     spi_cs_pin: int | None = None
     read_rate_hz: float | None = 1

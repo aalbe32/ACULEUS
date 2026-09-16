@@ -14,6 +14,8 @@ from config import SENSORS, TELEM_IP, SUPERVISOR_TICK_S, HEALTH_LOG_INTERVAL_S, 
 from database import Database
 from pipeline import PipelineStats, process_reading
 
+from adafruit_extended_bus import ExtendedI2C
+
 from sensors.as7331 import AS7331
 from sensors.ina226 import INA226
 from sensors.mcp9808 import MCP9808
@@ -80,7 +82,10 @@ def startup(db: Database, tel: TelemetrySink):
     # 2. I2C bus
     log.info("Initialising I2C bus...")
     try:
-        i2c = board.I2C()  # uses the board's default SCL/SDA pins
+        i2c = {
+            1: ExtendedI2C(1),
+            3: ExtendedI2C(3),
+        }  # uses the extended default SCL/SDA pins
     except Exception as e:
         log.critical(f"I2C init failed: {e}")
         return None
@@ -114,7 +119,7 @@ def startup(db: Database, tel: TelemetrySink):
 
         # init i2c sensors
         if sensor_config.bus == "i2c":
-            sensor = driver_class(sensor_config, i2c)
+            sensor = driver_class(sensor_config, i2c[sensor_config.i2c_bus])
             log.info(f"Initialising {sensor_config.name}...")
         
         # init spi sensor at cs address

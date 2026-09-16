@@ -5,3 +5,4 @@ Adafruit_CircuitPython_BNO08x
 adafruit-circuitpython-max31855
 adafruit-circuitpython-mcp9600
 adafruit-circuitpython-lis2mdl
+adafruit-extended-bus
