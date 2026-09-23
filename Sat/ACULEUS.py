@@ -127,6 +127,11 @@ def startup(db: Database, tel: TelemetrySink):
             cs = digitalio.DigitalInOut(getattr(board, f"D{sensor_config.spi_cs_pin}"))
             sensor = driver_class(sensor_config, spi, cs)
             log.info(f"Initialising {sensor_config.name}...")
+
+        # init uart sensor
+        elif sensor_config.bus == "uart":
+            sensor = driver_class(sensor_config)
+            log.info(f"Initialising {sensor_config.name}...")
  
         if not sensor.initialise():
             if sensor_config.critical:

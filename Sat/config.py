@@ -75,6 +75,8 @@ IIS2MDC_OFFSETS = [0.0, 0.0, 0.0] #float x, float y, float z
 MCP9601_I2C_ADDRESS = 0x60
 MCP9601_READ_RATE = 1
 
+UART_BAUD_RATE: int = [115200]
+
 
 
 @dataclass(frozen=True)
@@ -84,6 +86,8 @@ class SensorConfig:
     bus: str = "i2c" # set i2c to default as only one spi sensor
     i2c_bus: int = 1 # Default 1; (1, 3) <- in aculeus
     i2c_address: int | None = None
+    uart_port: str | None = None
+    uart_baud: int | None = None # only device that uses the uart is effective at this rate
     spi_cs_pin: int | None = None
     read_rate_hz: float | None = 1
     enabled: bool = True
@@ -121,7 +125,7 @@ SENSORS = [
         i2c_address= BNO08X_I2C_ADDRESS_1,
         i2c_bus = 3,
         read_rate_hz=BNO08X_READ_RATE,
-        enabled=True,
+        enabled=False,
         critical=False
     ),
 
@@ -155,7 +159,16 @@ SENSORS = [
         read_rate_hz=MCP9601_READ_RATE,
         enabled=False,
         critical=False,
-    )
+    ),
 
+    SensorConfig(
+        name="PX1122C",
+        bus="uart",
+        uart_port="/dev/serial0",
+        uart_baud=UART_BAUD_RATE[0],
+        read_rate_hz=1,
+        enabled=False,
+        critical=False,
+    )
 
 ]
