@@ -29,6 +29,17 @@ HEALTH_LOG_INTERVAL_S = 30.0
 THREAD_JOIN_TIMEOUT_S = 2.0
 
 
+LORA_ENABLED       = True
+LORA_TX_INTERVAL_S = 2.0
+LORA_SCK_PIN       = 21
+LORA_MOSI_PIN      = 20
+LORA_MISO_PIN      = 19
+LORA_CS_PIN        = 16
+LORA_RESET_PIN     = 26
+LORA_FREQ_MHZ      = 915.0
+LORA_TX_POWER      = 13      # dBm, 5-23
+
+
 
 """
 -------------------------------------- SENSOR CONFIG ---------------------------

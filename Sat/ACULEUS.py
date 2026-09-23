@@ -10,7 +10,16 @@ import time
  
 import board, digitalio
  
-from config import SENSORS, TELEM_IP, SUPERVISOR_TICK_S, HEALTH_LOG_INTERVAL_S, THREAD_JOIN_TIMEOUT_S
+from config import (
+    SENSORS, 
+    TELEM_IP, 
+    SUPERVISOR_TICK_S, 
+    HEALTH_LOG_INTERVAL_S, 
+    THREAD_JOIN_TIMEOUT_S,
+    LORA_ENABLED, 
+    LORA_TX_INTERVAL_S,
+    )
+
 from database import Database
 from pipeline import PipelineStats, process_reading
 
@@ -41,7 +50,9 @@ from sensors.px1122c import PX1122C
 
 from threads.SensorThread import SensorThread
 from telemetry import TelemetrySink
- 
+from lora_imu import LoRaSink, make_radio
+
+
 # Map config sensor names to driver classes. Add new sensors here.
 SENSOR_DRIVERS = {
     "AS7331": AS7331,
@@ -172,6 +183,20 @@ def startup(db: Database, tel: TelemetrySink):
     log.info("=" * 60)
     return sensors
 
+def start_lora():
+    """Bring up the LoRa downlink. Non-critical: returns None on failure."""
+    if not LORA_ENABLED:
+        log.info("LoRa disabled in config")
+        return None
+    log.info("Initialising LoRa radio...")
+    try:
+        lora = LoRaSink(make_radio(), tx_interval_s=LORA_TX_INTERVAL_S)
+        lora.open()
+        return lora
+    except Exception as e:
+        log.error(f"LoRa init failed: {e} — continuing without downlink")
+        return None
+
 def start_threads(sensors, sinks, stats):
     """Wrap each sensor in a SensorThread and start it."""
     threads = []
@@ -247,13 +272,15 @@ def stop_threads(threads):
             )
  
  
-def shutdown(db, tel, threads, stats):
+def shutdown(db, tel, threads, stats, lora: LoRaSink = None):
     log.info("Shutting down...")
     # ORDER MATTERS: stop sensor threads first so nothing is mid-write,
     # THEN close the sinks. Closing a sink while a worker is calling
     # write() would race against the sink's own lock and either drop
     # data or raise.
     stop_threads(threads)
+    if lora is not None:
+        lora.shutdown()
     tel.shutdown()
     db.shutdown()
     log.info(
@@ -284,6 +311,11 @@ def main() -> int:
         return 1
  
     try:
+        # start lora before sensor threads 
+        lora = start_lora()
+        if lora is not None:
+            sinks.append(lora)
+
         threads = start_threads(sensors, sinks, stats)
         supervise(threads, stats)
     finally:
