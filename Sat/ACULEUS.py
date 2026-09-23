@@ -16,14 +16,27 @@ from pipeline import PipelineStats, process_reading
 
 from adafruit_extended_bus import ExtendedI2C
 
-from sensors.as7331 import AS7331
-from sensors.ina226 import INA226
-from sensors.mcp9808 import MCP9808
-from sensors.bno08x import BNO08X
-from sensors.qmc5883l import QMC5883L
-from sensors.max31855 import MAX31855
-from sensors.iis2mdc_2 import IIS2MDC
-from sensors.mcp9601 import MCP9601
+
+# ----------------i2c 
+from sensors.as7331 import AS7331 #         UV 
+from sensors.ina226 import INA226 #         Voltage 
+from sensors.mcp9808 import MCP9808#        TEMP 
+from sensors.bno08x import BNO08X#          IMU
+from sensors.qmc5883l import QMC5883L#      
+from sensors.max31855 import MAX31855#     
+from sensors.iis2mdc_2 import IIS2MDC#      MAGNOMITOR
+from sensors.mcp9601 import MCP9601#        
+
+
+# ----------------UART 
+# - GPS
+from sensors.px1122c import PX1122C
+
+
+
+
+#-----------------SPI
+# -LORA
 
 
 from threads.SensorThread import SensorThread
@@ -38,7 +51,8 @@ SENSOR_DRIVERS = {
     "QMC5883L": QMC5883L,
     "MAX31855": MAX31855,
     "IIS2MDC" : IIS2MDC,
-    "MCP9601" : MCP9601
+    "MCP9601" : MCP9601,
+    "PX1122C" : PX1122C,
 }
 
  
