@@ -96,7 +96,7 @@ SENSORS = [
         name="AS7331",
         i2c_address=AS7331_I2C_ADDRESS,
         read_rate_hz = AS7331_READ_RATE,
-        enabled=False,
+        enabled=True,
         critical=False,
     ),
 
@@ -104,7 +104,7 @@ SENSORS = [
         name="INA226",
         i2c_address=INA226_I2C_ADDRESS,
         read_rate_hz=INA226_READ_RATE,
-        enabled=False,
+        enabled=True,
         critical=False
     ),
 
@@ -112,7 +112,7 @@ SENSORS = [
         name="MCP9808", 
         i2c_address=MCP9808_I2C_ADDRESS,
         read_rate_hz=MCP9808_READ_RATE,
-        enabled= False,
+        enabled= True,
         critical= False
     ),
 
@@ -145,7 +145,7 @@ SENSORS = [
         name="IIS2MDC",
         i2c_address=IIS2MDC_I2C_ADDRESS,
         read_rate_hz= IIS2MDC_READ_RATE,
-        enabled=False,
+        enabled=True,
         critical=False,
     ),
 
@@ -153,7 +153,7 @@ SENSORS = [
         name="MCP9601",
         i2c_address=MCP9601_I2C_ADDRESS,
         read_rate_hz=MCP9601_READ_RATE,
-        enabled=False,
+        enabled=True,
         critical=False,
     )
 
