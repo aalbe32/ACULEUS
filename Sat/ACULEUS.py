@@ -99,11 +99,11 @@ def startup(db: Database, tel: TelemetrySink):
         return None
     
     # 4. Telemetry
-    log.info("Initialising Telemetry sinks...")
-    try:
-        tel.open()
-    except Exception as e:
-        log.critical(f"Telemetry sink failed: {e}")
+    # log.info("Initialising Telemetry sinks...")
+    # try:
+        # tel.open()
+    # except Exception as e:
+    #     log.critical(f"Telemetry sink failed: {e}")
  
     # 5. Sensors
     sensors = []
